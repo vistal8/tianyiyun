@@ -1,0 +1,31 @@
+name: Run tianyiyun.py
+
+on:
+  # 允许手动触发
+  workflow_dispatch:
+  # 定时触发 (UTC时间每天0点/北京时间8点)
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  execute-script:
+    runs-on: ubuntu-latest
+    
+    steps:
+    # 检出代码
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # 设置Python环境
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.x'  # 使用最新的稳定版Python3
+
+    # 安装依赖（如有需要）
+    # - name: Install dependencies
+    #   run: pip install -r requirements.txt
+
+    # 执行Python脚本
+    - name: Run tianyiyun.py
+      run: python tianyiyun.py
