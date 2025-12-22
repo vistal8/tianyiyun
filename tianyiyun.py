@@ -10,6 +10,7 @@
 # 推送变量需设置 WXPUSHER_APP_TOKEN 和 WXPUSHER_UID（多个UID用&分隔）
 # 有图形验证码就是风控了 自己去网页端登陆 输入验证码 等几天
 #设备锁问题请访问https://github.com/vistal8/tianyiyun/blob/main/README.md 查看详细说明
+#抽奖活动失效 去掉了抽奖功能！
 import time
 import os
 import random
@@ -179,7 +180,7 @@ def main():
         username = acc["username"]
         password = acc["password"]
         masked_phone = mask_phone(username)
-        account_result = {"username": masked_phone, "sign": "", "lottery": ""}
+        account_result = {"username": masked_phone, "sign": ""}
         
         print(f"\n🔔 处理账号：{masked_phone}")
         
@@ -192,7 +193,6 @@ def main():
         
         # 签到流程
         try:
-            # 每日签到
             rand = str(round(time.time() * 1000))
             sign_url = f'https://api.cloud.189.cn/mkt/userSign.action?rand={rand}&clientType=TELEANDROID&version=8.6.3&model=SM-G930K'
             headers = {
@@ -205,30 +205,19 @@ def main():
                 account_result["sign"] = f"✅ +{resp['netdiskBonus']}M"
             else:
                 account_result["sign"] = f"⏳ 已签到+{resp['netdiskBonus']}M"
-            
-            # 单次抽奖（原第一次抽奖）
-            time.sleep(random.randint(2, 5))
-            lottery_url = 'https://m.cloud.189.cn/v2/drawPrizeMarketDetails.action?taskId=TASK_SIGNIN&activityId=ACT_SIGNIN'
-            resp = session.get(lottery_url, headers=headers).json()
-            if "errorCode" in resp:
-                account_result["lottery"] = f"❌ {resp.get('errorCode')}"
-            else:
-                prize = resp.get('prizeName') or resp.get('description')
-                account_result["lottery"] = f"🎁 {prize}"
                 
         except Exception as e:
-            account_result["sign"] = "❌ 操作异常"
-            account_result["lottery"] = f"⚠️ {str(e)}"
+            account_result["sign"] = f"❌ 异常: {str(e)}"
         
         all_results.append(account_result)
-        print(f"  {account_result['sign']} | {account_result['lottery']}")
+        print(f"  {account_result['sign']}")
     
     # 生成汇总表格
     table = "### ⛅ 天翼云盘签到汇总\n\n"
-    table += "| 账号 | 签到结果 | 每日抽奖 |\n"
-    table += "|:-:|:-:|:-:|\n"
+    table += "| 账号 | 签到结果 |\n"
+    table += "|:-:|:-:|\n"
     for res in all_results:
-        table += f"| {res['username']} | {res['sign']} | {res['lottery']} |\n"
+        table += f"| {res['username']} | {res['sign']} |\n"
     
     # 发送汇总推送
     send_wxpusher(table)
